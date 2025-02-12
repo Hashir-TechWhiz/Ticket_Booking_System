@@ -2,24 +2,29 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
 
 require '../vendor/autoload.php';
+
+// Load .env file
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../'); 
+$dotenv->load();
 
 function sendEmail($toEmail, $toName, $status, $adminMessage = "", $price = null, $contactNumber = null)
 {
     $mail = new PHPMailer(true);
     try {
-        // SMTP settings
+        // SMTP settings using environment variables
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'hashirmohamed04@gmail.com';
-        $mail->Password   = 'ufen hzko flnp vfvp';
+        $mail->Username   = $_ENV['SMTP_USERNAME'];
+        $mail->Password   = $_ENV['SMTP_PASSWORD']; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         // Email content
-        $mail->setFrom('hashirmohamed04@gmail.com', 'Your Company'); 
+        $mail->setFrom($_ENV['SMTP_USERNAME'], 'Your Company');
         $mail->addAddress($toEmail, $toName);
         $mail->isHTML(true);
 
