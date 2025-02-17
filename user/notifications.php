@@ -18,6 +18,11 @@ $sql = "SELECT tr.id, tb.bus_name, tb.bus_number, tr.route_from, tr.route_to, tr
         ORDER BY tr.request_date DESC";
 
 $result = $conn->query($sql);
+
+// Check if the query was successful
+if (!$result) {
+    die("Query failed: " . $conn->error);
+}
 ?>
 
 <!DOCTYPE html>

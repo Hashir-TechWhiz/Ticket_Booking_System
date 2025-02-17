@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <?php echo in_array($seat_number, $booked_seats) ? 'disabled' : ''; ?>>
                                 <?php echo $seat_number; ?>
                             </button>
-                            <?php if ($col == 1) echo '<div class="w-8"></div>'; // Aisle Space 
+                            <?php if ($col == 1) echo '<div class="w-8"></div>';
                             ?>
                         <?php endfor; ?>
                     </div>

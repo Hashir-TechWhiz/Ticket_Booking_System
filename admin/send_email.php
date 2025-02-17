@@ -24,7 +24,7 @@ function sendEmail($toEmail, $toName, $status, $adminMessage = "", $price = null
         $mail->Port       = 587;
 
         // Email content
-        $mail->setFrom($_ENV['SMTP_USERNAME'], 'Your Company');
+        $mail->setFrom($_ENV['SMTP_USERNAME'], 'Go Sri Lanka');
         $mail->addAddress($toEmail, $toName);
         $mail->isHTML(true);
 
