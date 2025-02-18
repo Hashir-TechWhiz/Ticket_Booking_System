@@ -11,13 +11,13 @@ session_start();
     <script defer src="assets/js/landingPopup.js"></script>
 </head>
 
-<body class="relative flex flex-col items-start justify-center h-screen bg-cover bg-center px-6" style="background-image: url('assets/images/Bus.webp');">
+<body class="relative flex flex-col items-start justify-center h-screen bg-cover bg-center px-[6%]" style="background-image: url('assets/images/Bus.webp');">
 
     <!-- Dark Overlay -->
     <div class="absolute inset-0 bg-black/50"></div>
 
     <!-- Nav -->
-    <nav class="absolute top-0 left-0 z-10 flex items-center justify-between bg-gray-900 w-full px-6 py-3 shadow-lg">
+    <nav class="absolute top-0 left-0 z-10 flex items-center justify-between bg-gray-900 w-full px-[6%] py-4 shadow-lg">
         <a href="index.php" class="flex items-center gap-2">
             <img src="assets/images/Logo.png" alt="logo" class="h-12 filter invert" />
             <h1 class="text-2xl font-bold text-white">Go Sri Lanka</h1>

@@ -100,11 +100,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </section>
 
     <section class="hidden lg:flex sticky h-40 w-full top-0 h-screen flex-1">
-        <!-- Dark Overlay -->
-        <div class="absolute inset-0 bg-black/40"></div>
-
         <!-- Image -->
-        <img src="assets/images/Bus.png" alt="Bus" class="object-cover size-full">
+        <img src="assets/images/login.jpg" alt="Bus" class="object-cover size-full">
     </section>
 
 </body>

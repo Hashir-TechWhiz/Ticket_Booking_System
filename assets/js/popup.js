@@ -1,7 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
     window.openPopup = function (busId) {
         document.getElementById("tripBusId").value = busId;
-        document.getElementById("popupForm").style.display = "block";
+        let popup = document.getElementById("popupForm");
+
+        popup.classList.remove("hidden"); // Show popup
+        popup.classList.add("flex"); // Ensure flexbox works for centering
 
         // Set today's date as the minimum for "Date From"
         let today = new Date().toISOString().split("T")[0];
@@ -10,7 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     window.closePopup = function () {
-        document.getElementById("popupForm").style.display = "none";
+        let popup = document.getElementById("popupForm");
+        popup.classList.add("hidden"); // Hide popup
+        popup.classList.remove("flex");
     };
 
     function updateDays() {

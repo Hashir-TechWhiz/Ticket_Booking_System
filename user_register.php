@@ -88,8 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body class="relative flex flex-row bg-[#c9dcfa]">
 
     <section class="hidden lg:flex sticky h-40 w-full top-0 h-screen flex-1">
-        <div class="absolute inset-0 bg-black/40"></div>
-        <img src="assets/images/Bus.png" alt="Bus" class="object-cover size-full">
+        <img src="assets/images/SignUp.jpg" alt="Bus" class="object-cover size-full">
     </section>
 
     <section class="my-auto flex h-full min-h-screen flex-1 items-center px-5 py-10">
