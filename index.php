@@ -6,7 +6,7 @@ session_start();
 
 <head>
     <meta charset="UTF-8">
-    <title>Ticket Booking System</title>
+    <title>Go Sri Lanka</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="assets/js/landingPopup.js"></script>
 </head>
