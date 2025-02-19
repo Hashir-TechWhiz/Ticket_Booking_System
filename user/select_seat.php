@@ -52,18 +52,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Seats</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen py-5">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 class="text-2xl font-bold text-center mb-4">Select Your Seats</h2>
-        <p class="text-center text-gray-600 mb-4">Bus: <strong><?php echo $bus['bus_number']; ?></strong></p>
+<body class="flex flex-col items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat px-[6%] py-5" style="background-image: url('../assets/images/Bg.jpg');">
+    <div class="relative flex justify-center items-center bg-white rounded-xl p-2 shadow-xl w-full">
+        <a href="javascript:window.history.back();" class="absolute left-3 flex items-center gap-2 text-blue-500">
+            <img src="../assets/icons/Back.png" alt="Back" class="w-5 h-5"> Back
+        </a>
+
+        <h2 class="flex items-center justify-center text-2xl font-semibold text-[#4E71FF] w-full">
+            Book Your Seats
+        </h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg mt-10">
+        <p class="text-center text-gray-600 mb-2 text-xl">Bus Name: <strong><?php echo $bus['bus_name']; ?></strong></p>
+        <p class="text-center text-gray-600 mb-4 text-xl">Bus Number: <strong><?php echo $bus['bus_number']; ?></strong></p>
 
         <form method="POST">
             <div class="flex flex-col gap-3">
                 <?php
-                $columns = 4; // Two on each side
+                $columns = 4;
                 $rows = ceil($bus['seats'] / $columns);
 
                 for ($row = 0; $row < $rows; $row++) : ?>
