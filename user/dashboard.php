@@ -57,7 +57,7 @@ $result = $conn->query($sql);
     </div>
 
     <!-- Bus Search Form -->
-    <div class="mt-16 flex flex-col justify-center bg-white rounded-xl p-4 xl:max-w-[20%] mx-auto w-full shadow-xl">
+    <div class="mt-16 flex flex-col justify-center bg-white rounded-xl p-4 xl:max-w-[30%] mx-auto w-full shadow-xl">
 
         <h3 class="flex justify-center w-full text-xl font-semibold text-[#4E71FF]">Select Route & Date</h3>
 
