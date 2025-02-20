@@ -1,1 +1,5 @@
+# Ignore the Composer's vendor directory
+/vendor/
+
+# Ignore the .env file containing sensitive information (API keys, credentials, etc.)
 .env
