@@ -74,7 +74,9 @@ $sql_bookings_table = "SELECT
         bse.time AS bus_time,
         b.seat_number, 
         b.journey_date, 
-        b.payment_status
+        b.payment_status,
+        bse.route_from,
+        bse.route_to
     FROM bookings b
     INNER JOIN users u ON b.user_id = u.id
     INNER JOIN (
@@ -205,6 +207,7 @@ if (!$result) {
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Time</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seat Number</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Journey Date</th>
@@ -218,6 +221,9 @@ if (!$result) {
                                     <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($row['user_contact']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($row['user_email']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($row['bus_name']); ?></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php echo htmlspecialchars($row['route_from']) . ' → ' . htmlspecialchars($row['route_to']); ?>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($row['bus_time']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($row['seat_number']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap"><?php echo htmlspecialchars($row['journey_date']); ?></td>

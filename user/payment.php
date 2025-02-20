@@ -77,6 +77,7 @@ if (isset($_POST['confirm_payment'])) {
 <head>
     <meta charset="UTF-8">
     <title>Payment Portal</title>
+    <script src="../assets/js/cardVal.js"></script>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 </head>
 
@@ -134,27 +135,44 @@ if (isset($_POST['confirm_payment'])) {
         </div>
 
         <!-- Payment Form -->
-        <form method="POST" action="">
+        <form method="POST" action="" onsubmit="return validatePaymentForm()">
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                    <input type="text" name="card_number" required maxlength="16"
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
+                    <input type="text" name="cardholder_name" required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        placeholder="4242 4242 4242 4242">
+                        placeholder="John Doe"
+                        pattern="[A-Za-z ]+" title="Only letters and spaces allowed">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                    <input type="text" name="card_number" id="cardNumber" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        placeholder="4242 4242 4242 4242"
+                        maxlength="19"
+                        oninput="formatCardNumber(this)">
+                    <span id="cardError" class="text-red-500 text-sm hidden">Invalid card number</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                        <input type="text" name="expiry_date" required maxlength="5"
+                        <input type="text" name="expiry_date" id="expiryDate" required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            placeholder="MM/YY">
+                            placeholder="MM/YY"
+                            maxlength="5"
+                            oninput="formatExpiryDate(this)">
+                        <span id="expiryError" class="text-red-500 text-sm hidden">Invalid expiry date</span>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                        <input type="text" name="cvv" required maxlength="3"
+                        <input type="text" name="cvv" id="cvv" required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            placeholder="123">
+                            placeholder="123"
+                            maxlength="3"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <span id="cvvError" class="text-red-500 text-sm hidden">Invalid CVV</span>
                     </div>
                 </div>
 

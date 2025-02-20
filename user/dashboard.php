@@ -99,7 +99,10 @@ $result = $conn->query($sql);
                     </tr>
                 </thead>
                 <tbody class="bg-white">
-                    <?php while ($booking = $result->fetch_assoc()) { ?>
+                    <?php while ($booking = $result->fetch_assoc()) {
+                        $journey_date = strtotime($booking['journey_date']);
+                        $current_date = strtotime(date("Y-m-d"));
+                    ?>
                         <tr class="hover:bg-gray-100 text-center">
                             <td class="p-3 border border-gray-300"><?php echo $booking['bus_name']; ?></td>
                             <td class="p-3 border border-gray-300"><?php echo $booking['bus_number']; ?></td>
@@ -111,11 +114,20 @@ $result = $conn->query($sql);
                             <td class="p-3 border border-gray-300">Rs. <?php echo $booking['price']; ?></td>
                             <td class="p-3 border border-gray-300"><?php echo $booking['bus_type']; ?></td>
                             <td class="p-3 border border-gray-300">
-                                <a href="cancel_booking.php?id=<?php echo $booking['id']; ?>" onclick="return confirm('Are you sure you want to cancel this booking?')" class="text-red-500 hover:text-red-700 text-semibold">Cancel</a>
+                                <?php if ($journey_date > $current_date) { ?>
+                                    <a href="cancel_booking.php?id=<?php echo $booking['id']; ?>"
+                                        onclick="return confirm('Are you sure you want to cancel this booking?')"
+                                        class="text-red-500 hover:text-red-700 font-semibold">
+                                        Cancel
+                                    </a>
+                                <?php } else { ?>
+                                    <span class="text-gray-400 font-semibold">Expired</span>
+                                <?php } ?>
                             </td>
                         </tr>
                     <?php } ?>
                 </tbody>
+
             </table>
         </div>
     <?php } ?>

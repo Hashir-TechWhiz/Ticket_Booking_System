@@ -8,6 +8,8 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
+$errors = [];
+
 if (isset($_GET['id'])) {
     $bus_id = $_GET['id'];
     $sql = "SELECT * FROM buses WHERE id = $bus_id AND admin_id = " . $_SESSION['admin_id'];
@@ -21,7 +23,7 @@ if (isset($_GET['id'])) {
 
 if (isset($_POST['update_bus'])) {
     $bus_number     = $_POST['bus_number'];
-    $bus_name       = $_POST['bus_name'];
+    $bus_name       = trim($_POST['bus_name']);
     $contact_number = $_POST['contact_number'];
     $seats          = $_POST['seats'];
     $route_from     = $_POST['route_from'];
@@ -30,17 +32,36 @@ if (isset($_POST['update_bus'])) {
     $price          = $_POST['price'];
     $bus_type       = $_POST['bus_type'];
 
-    $sql = "UPDATE buses 
-            SET bus_number='$bus_number', bus_name='$bus_name', contact_number='$contact_number', 
-                seats=$seats, route_from='$route_from', route_to='$route_to', 
-                time='$time', price='$price', bus_type='$bus_type'
-            WHERE id = $bus_id AND admin_id = " . $_SESSION['admin_id'];
+    // Validations
+    if (trim($bus_name) === '') {
+        $errors['bus_name'] = "Bus name is required.";
+    }
 
-    if ($conn->query($sql) === TRUE) {
-        header("Location: dashboard.php");
-        exit();
-    } else {
-        $error = "Error updating bus: " . $conn->error;
+    if (!preg_match("/^[A-Z]{2} \d{4}$/", $bus_number)) {
+        $errors['bus_number'] = "Format must be 'XX 0000' (e.g., NC 0001).";
+    }
+
+    if (!preg_match("/^\d{10}$/", $contact_number)) {
+        $errors['contact_number'] = "Must be exactly 10 digits.";
+    }
+
+    if (!ctype_digit($seats) || (int)$seats < 49 || (int)$seats > 58) {
+        $errors['seats'] = "Must be a number between 49 and 58.";
+    }
+
+    if (empty($errors)) {
+        $sql = "UPDATE buses 
+                SET bus_number='$bus_number', bus_name='$bus_name', contact_number='$contact_number', 
+                    seats=$seats, route_from='$route_from', route_to='$route_to', 
+                    time='$time', price='$price', bus_type='$bus_type'
+                WHERE id = $bus_id AND admin_id = " . $_SESSION['admin_id'];
+
+        if ($conn->query($sql) === TRUE) {
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Error updating bus: " . $conn->error;
+        }
     }
 }
 ?>
@@ -50,60 +71,141 @@ if (isset($_POST['update_bus'])) {
 <head>
     <meta charset="UTF-8">
     <title>Edit Bus</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function formatTimeInput(input) {
+            // Remove existing colons and non-digits
+            let value = input.value.replace(/[^\d]/g, '');
+
+            // Add colon after first two digits
+            if (value.length > 2) {
+                value = value.substring(0, 2) + ':' + value.substring(2, 4);
+            }
+
+            // Update the input value
+            input.value = value;
+        }
+    </script>
 </head>
 
-<body>
-    <h2>Edit Bus</h2>
-    <?php if (isset($error)) {
-        echo "<p style='color:red;'>$error</p>";
-    } ?>
-    <form method="POST" action="">
-        <label>Bus Name:</label>
-        <input type="text" name="bus_name" value="<?php echo $bus['bus_name']; ?>" required><br>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-xl">
+        <!-- Header -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">Edit Bus</h2>
+            <a href="dashboard.php" class="text-blue-500 hover:text-blue-700 flex items-center text-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
 
-        <label>Bus Number:</label>
-        <input type="text" name="bus_number" value="<?php echo $bus['bus_number']; ?>" required><br>
+        <form method="POST" action="" class="space-y-4">
+            <!-- Form Fields -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Bus Number</label>
+                <input type="text" name="bus_number" required
+                    value="<?php echo htmlspecialchars($bus['bus_number'] ?? ($_POST['bus_number'] ?? '')) ?>"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <?php if (isset($errors['bus_number'])): ?>
+                    <p class="text-red-500 text-sm mt-1"><?php echo $errors['bus_number']; ?></p>
+                <?php endif; ?>
+            </div>
 
-        <label>Contact Number:</label>
-        <input type="text" name="contact_number" value="<?php echo $bus['contact_number']; ?>" required><br>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Bus Name</label>
+                <input type="text" name="bus_name" required
+                    value="<?php echo htmlspecialchars($bus['bus_name'] ?? ($_POST['bus_name'] ?? '')) ?>"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <?php if (isset($errors['bus_name'])): ?>
+                    <p class="text-red-500 text-sm mt-1"><?php echo $errors['bus_name']; ?></p>
+                <?php endif; ?>
+            </div>
 
-        <label>Seats:</label>
-        <input type="number" name="seats" value="<?php echo $bus['seats']; ?>" required><br>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                    <input type="text" name="contact_number" required
+                        value="<?php echo htmlspecialchars($bus['contact_number'] ?? ($_POST['contact_number'] ?? '')) ?>"
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <?php if (isset($errors['contact_number'])): ?>
+                        <p class="text-red-500 text-sm mt-1"><?php echo $errors['contact_number']; ?></p>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Seats</label>
+                    <input type="number" name="seats" required
+                        value="<?php echo htmlspecialchars($bus['seats'] ?? ($_POST['seats'] ?? '')) ?>"
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <?php if (isset($errors['seats'])): ?>
+                        <p class="text-red-500 text-sm mt-1"><?php echo $errors['seats']; ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
 
-        <label>Route From:</label>
-        <input type="text" name="route_from" value="<?php echo $bus['route_from']; ?>" required><br>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Route From</label>
+                    <input type="text" name="route_from" required
+                        value="<?php echo htmlspecialchars($bus['route_from'] ?? ($_POST['route_from'] ?? '')) ?>"
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Route To</label>
+                    <input type="text" name="route_to" required
+                        value="<?php echo htmlspecialchars($bus['route_to'] ?? ($_POST['route_to'] ?? '')) ?>"
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
 
-        <label>Route To:</label>
-        <input type="text" name="route_to" value="<?php echo $bus['route_to']; ?>" required><br>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Departure Time</label>
+                <div class="flex gap-2">
+                    <?php
+                    $time_value = $bus['time'] ?? ($_POST['time'] ?? '');
+                    if (isset($time_value)) {
+                        $time_parts = explode(" ", $time_value);
+                        $bus_time = $time_parts[0];
+                    } else {
+                        $bus_time = '';
+                    }
+                    ?>
+                    <input type="text" name="time" placeholder="10:00" required
+                        value="<?php echo htmlspecialchars($bus_time) ?>"
+                        oninput="formatTimeInput(this)"
+                        class="w-1/2 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select name="ampm" required
+                        class="w-1/2 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="AM" <?= (($bus['time'] ?? ($_POST['ampm'] ?? '')) === 'AM') ? 'selected' : '' ?>>AM</option>
+                        <option value="PM" <?= (($bus['time'] ?? ($_POST['ampm'] ?? '')) === 'PM') ? 'selected' : '' ?>>PM</option>
+                    </select>
+                </div>
+            </div>
 
-        <label>Time:</label>
-        <?php
-        $time_parts = explode(" ", $bus['time']);
-        $bus_time = $time_parts[0];
-        $bus_ampm = $time_parts[1];
-        ?>
-        <input type="text" name="time" value="<?php echo $bus_time; ?>" required>
-        <select name="ampm" required>
-            <option value="AM" <?php if ($bus_ampm == "AM") echo "selected"; ?>>AM</option>
-            <option value="PM" <?php if ($bus_ampm == "PM") echo "selected"; ?>>PM</option>
-        </select>
-        <br>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price (Rs)</label>
+                    <input type="number" name="price" step="0.01" required
+                        value="<?php echo htmlspecialchars($bus['price'] ?? ($_POST['price'] ?? '')) ?>"
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bus Type</label>
+                    <select name="bus_type" required
+                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="A/C" <?= (($bus['bus_type'] ?? ($_POST['bus_type'] ?? '')) === 'A/C') ? 'selected' : '' ?>>A/C</option>
+                        <option value="Non-A/C" <?= (($bus['bus_type'] ?? ($_POST['bus_type'] ?? '')) === 'Non-A/C') ? 'selected' : '' ?>>Non-A/C</option>
+                    </select>
+                </div>
+            </div>
 
-        <label>Price (Rs.):</label>
-        <input type="number" name="price" value="<?php echo $bus['price']; ?>" required><br>
-
-        <label>Bus Type:</label>
-        <select name="bus_type" required>
-            <option value="A/C" <?php if ($bus['bus_type'] == "A/C") echo "selected"; ?>>A/C</option>
-            <option value="Non-A/C" <?php if ($bus['bus_type'] == "Non-A/C") echo "selected"; ?>>Non-A/C</option>
-        </select>
-        <br>
-
-        <input type="submit" name="update_bus" value="Update Bus">
-    </form>
-    <br>
-    <a href="dashboard.php">Back to Dashboard</a>
+            <button type="submit" name="update_bus"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                Update Bus
+            </button>
+        </form>
+    </div>
 </body>
 
 </html>

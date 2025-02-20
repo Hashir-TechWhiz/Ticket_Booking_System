@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Seats</title>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="flex flex-col items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat px-[6%] py-5" style="background-image: url('../assets/images/Bg.jpg');">
@@ -71,29 +71,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="text-center text-gray-600 mb-4 text-xl">Bus Number: <strong><?php echo $bus['bus_number']; ?></strong></p>
 
         <form method="POST">
-            <div class="flex flex-col gap-3">
-                <?php
-                $columns = 4;
-                $rows = ceil($bus['seats'] / $columns);
+            <div class="bus-layout bg-gray-800 p-6 rounded-xl shadow-lg">
+                <div class="driver-area bg-gray-700 text-white text-center py-3 rounded-t-lg mb-4 font-bold">
+                    🚌 Driver's Cabin
+                </div>
 
-                for ($row = 0; $row < $rows; $row++) : ?>
-                    <div class="flex justify-center gap-4">
-                        <?php for ($col = 0; $col < $columns; $col++) :
-                            $seat_number = ($row * $columns) + $col + 1;
-                            if ($seat_number > $bus['seats']) break;
-                        ?>
-                            <button type="button"
-                                class="seat w-12 h-12 flex items-center justify-center rounded-md border text-white font-bold
-                                <?php echo in_array($seat_number, $booked_seats) ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-700'; ?>"
-                                data-seat="<?php echo $seat_number; ?>"
-                                <?php echo in_array($seat_number, $booked_seats) ? 'disabled' : ''; ?>>
-                                <?php echo $seat_number; ?>
-                            </button>
-                            <?php if ($col == 1) echo '<div class="w-8"></div>';
+                <div class="seating-area flex flex-col gap-4">
+                    <?php
+                    $columns = 4;
+                    $rows = ceil($bus['seats'] / $columns);
+
+                    for ($row = 0; $row < $rows; $row++) : ?>
+                        <div class="seat-row flex justify-center gap-2">
+                            <?php for ($col = 0; $col < $columns; $col++) :
+                                $seat_number = ($row * $columns) + $col + 1;
+                                if ($seat_number > $bus['seats']) break;
                             ?>
-                        <?php endfor; ?>
-                    </div>
-                <?php endfor; ?>
+                                <button type="button"
+                                    class="seat w-10 h-10 flex items-center justify-center rounded-sm border-2 font-bold text-sm
+                                    <?php echo in_array($seat_number, $booked_seats) ?
+                                        'bg-gray-500 border-gray-600 cursor-not-allowed' :
+                                        'bg-green-400 border-gray-300 hover:bg-green-600 text-gray-800'; ?>"
+                                    data-seat="<?php echo $seat_number; ?>"
+                                    <?php echo in_array($seat_number, $booked_seats) ? 'disabled' : ''; ?>>
+                                    <?php echo $seat_number; ?>
+                                </button>
+                                <?php if ($col == 1) echo '<div class="aisle w-16 bg-gray-300 mx-2"></div>'; ?>
+                            <?php endfor; ?>
+                        </div>
+                    <?php endfor; ?>
+                </div>
+
+                <div class="aisle-floor h-4 bg-gray-300 mt-4 rounded-b-lg"></div>
+            </div>
+
+            <!-- Seat Legend -->
+            <div class="seat-legend mt-6 flex justify-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 bg-green-400 rounded-sm border-2 border-gray-300"></div>
+                    <span>Available</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 bg-blue-500 rounded-sm border-2 border-gray-300"></div>
+                    <span>Selected</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 bg-gray-500 rounded-sm border-2 border-gray-600"></div>
+                    <span>Booked</span>
+                </div>
             </div>
 
             <input type="hidden" name="bus_id" value="<?php echo $bus_id; ?>">
@@ -101,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="hidden" name="selected_seats" id="selectedSeats">
             <p class="mt-4 text-center text-lg"><strong>Total Price: <span id="totalPrice">$0</span></strong></p>
 
-            <button type="submit" id="proceedBtn" class="mt-4 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700" disabled>
+            <button type="submit" id="proceedBtn" class="mt-4 w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200" disabled>
                 Proceed to Payment
             </button>
         </form>
@@ -120,12 +145,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!this.classList.contains("bg-gray-500")) {
                     const seatNumber = this.dataset.seat;
                     if (this.classList.contains("bg-blue-500")) {
-                        this.classList.remove("bg-blue-500");
-                        this.classList.add("bg-green-500");
+                        this.classList.remove("bg-blue-500", "text-white");
+                        this.classList.add("bg-green-400", "text-gray-800");
                         selectedSeats = selectedSeats.filter(seat => seat !== seatNumber);
                     } else {
-                        this.classList.remove("bg-green-500");
-                        this.classList.add("bg-blue-500");
+                        this.classList.remove("bg-green-400", "text-gray-800");
+                        this.classList.add("bg-blue-500", "text-white");
                         selectedSeats.push(seatNumber);
                     }
 

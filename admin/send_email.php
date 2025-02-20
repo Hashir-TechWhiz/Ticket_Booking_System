@@ -10,7 +10,7 @@ require '../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../'); 
 $dotenv->load();
 
-function sendEmail($toEmail, $toName, $status, $adminMessage = "", $price = null, $contactNumber = null)
+function sendEmail($toEmail, $toName, $status, $adminMessage)
 {
     $mail = new PHPMailer(true);
     try {
@@ -31,17 +31,9 @@ function sendEmail($toEmail, $toName, $status, $adminMessage = "", $price = null
         // Set subject and message
         $subject = "Trip Request " . ucfirst($status);
         $message = "<p>Dear $toName,</p>";
-
-        if ($status == 'Approved') {
-            $message .= "<p>Your trip request has been <b>Approved</b>!</p>
-                        <p>Price: <b>Rs. $price</b></p>
-                        <p>Contact Number: <b>$contactNumber</b></p>";
-        } else {
-            $message .= "<p>Unfortunately, your trip request has been <b>Rejected</b>.</p>
-                        <p>Reason: <b>$adminMessage</b></p>";
-        }
-
-        $message .= "<p>Thank you for using our service.</p>";
+        $message .= "<p>Your trip request has been <b>" . ucfirst($status) . "</b>.</p>";
+        $message .= "<p>" . nl2br($adminMessage) . "</p>";
+        $message .= "<p>Thank you for choosing Go Sri Lanka!</p>";
 
         $mail->Subject = $subject;
         $mail->Body    = $message;

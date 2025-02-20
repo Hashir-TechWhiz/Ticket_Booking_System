@@ -22,14 +22,10 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
     if ($action == 'approve') {
         $status = 'Approved';
-        $price = 5000;
-        $contactNumber = "1234567890";
-        $adminMessage = "";
+        $adminMessage = "Your trip request has been approved! 🎉 Please contact us at 123-456-7890 to confirm your booking and discuss pricing details.";
     } elseif ($action == 'reject') {
         $status = 'Rejected';
-        $adminMessage = "Bus is unavailable.";
-        $price = null;
-        $contactNumber = null;
+        $adminMessage = "We regret to inform you that the requested bus is unavailable for your selected dates. 😔 Please try alternative dates or contact us for other options.";
     }
 
     $update_sql = "UPDATE trip_requests SET status = '$status' WHERE id = $request_id";
@@ -42,8 +38,8 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
             $toEmail = $user['email'];
             $toName = $user['name'];
 
-            // Send email
-            sendEmail($toEmail, $toName, $status, $adminMessage, $price, $contactNumber);
+            // Send email with updated parameters
+            sendEmail($toEmail, $toName, $status, $adminMessage);
         }
 
         header("Location: trip_requests.php");
@@ -60,55 +56,119 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 <head>
     <meta charset="UTF-8">
     <title>Trip Requests</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
-<body>
-    <h2>Trip Requests</h2>
-    <?php if (isset($error)) {
-        echo "<p style='color:red;'>$error</p>";
-    } ?>
-    <?php if ($result->num_rows > 0) { ?>
-        <table border="1">
-            <tr>
-                <th>User Name</th>
-                <th>Bus Name</th>
-                <th>Bus Number</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Date From</th>
-                <th>Date To</th>
-                <th>Days</th>
-                <th>Status</th>
-                <th>Request Date</th>
-                <th>Actions</th>
-            </tr>
-            <?php while ($request = $result->fetch_assoc()) { ?>
-                <tr>
-                    <td><?php echo $request['user_name']; ?></td>
-                    <td><?php echo $request['bus_name']; ?></td>
-                    <td><?php echo $request['bus_number']; ?></td>
-                    <td><?php echo $request['route_from']; ?></td>
-                    <td><?php echo $request['route_to']; ?></td>
-                    <td><?php echo $request['date_from']; ?></td>
-                    <td><?php echo $request['date_to']; ?></td>
-                    <td><?php echo $request['days']; ?></td>
-                    <td><?php echo $request['status']; ?></td>
-                    <td><?php echo $request['request_date']; ?></td>
-                    <td>
-                        <?php if ($request['status'] == 'Pending') { ?>
-                            <a href="?action=approve&id=<?php echo $request['id']; ?>">Approve</a> |
-                            <a href="?action=reject&id=<?php echo $request['id']; ?>" onclick="return confirm('Are you sure you want to reject this request?')">Reject</a>
-                        <?php } else { ?>
-                            <span>-</span>
-                        <?php } ?>
-                    </td>
-                </tr>
-            <?php } ?>
-        </table>
-    <?php } else {
-        echo "<p>No trip requests found.</p>";
-    } ?>
+<body class="relative flex flex-col items-center justify-start min-h-screen bg-cover bg-center bg-no-repeat px-[6%] py-5" style="background-image: url('../assets/images/AdminBg.jpg');">
+
+    <div class="relative flex justify-center items-center bg-white rounded-xl p-2 shadow-xl w-full">
+        <a href="javascript:window.history.back();" class="absolute left-3 flex items-center gap-2 text-blue-500">
+            <img src="../assets/icons/Back.png" alt="Back" class="w-5 h-5"> Back
+        </a>
+
+        <h2 class="flex items-center justify-center text-2xl font-semibold text-[#4E71FF] w-full">
+            Trip Request Management
+        </h2>
+    </div>
+
+    <div class="w-full">
+
+        <!-- Error Message -->
+        <?php if (isset($error)) { ?>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                <?php echo $error; ?>
+            </div>
+        <?php } ?>
+
+        <!-- Table -->
+        <?php if ($result->num_rows > 0) { ?>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden mt-10">
+                <div class="overflow-x-auto max-h-[700px] overflow-y-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 top-0 z-10 sticky">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Details</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Route</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <?php while ($request = $result->fetch_assoc()) { ?>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium text-gray-900"><?php echo $request['user_name']; ?></div>
+                                        <div class="text-sm text-gray-500"><?php echo $request['user_email']; ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium"><?php echo $request['bus_name']; ?></div>
+                                        <div class="text-sm text-gray-500">#<?php echo $request['bus_number']; ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="font-medium"><?php echo $request['route_from']; ?></span>
+                                            <span class="mx-2 text-gray-400">→</span>
+                                            <span class="font-medium"><?php echo $request['route_to']; ?></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <div><?php echo substr($request['date_from'], 0, 10); ?></div>
+                                            <div class="text-gray-400">to</div>
+                                            <div><?php echo substr($request['date_to'], 0, 10); ?></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                            <?php echo $request['days']; ?> days
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php $statusColor = $request['status'] === 'Approved' ? 'green' : ($request['status'] === 'Rejected' ? 'red' : 'yellow'); ?>
+                                        <span class="px-3 py-1 bg-<?php echo $statusColor; ?>-100 text-<?php echo $statusColor; ?>-800 rounded-full text-sm">
+                                            <?php echo $request['status']; ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?php echo substr($request['request_date'], 0, 10); ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <?php if ($request['status'] == 'Pending') { ?>
+                                            <div class="flex space-x-2">
+                                                <a href="?action=approve&id=<?php echo $request['id']; ?>"
+                                                    class="text-green-600 hover:text-green-900 transition-colors text-xl"
+                                                    title="Approve Request">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </a>
+                                                <a href="?action=reject&id=<?php echo $request['id']; ?>"
+                                                    class="text-red-600 hover:text-red-900 transition-colors text-xl"
+                                                    onclick="return confirm('Are you sure you want to reject this request?')"
+                                                    title="Reject Request">
+                                                    <i class="fas fa-times-circle"></i>
+                                                </a>
+                                            </div>
+                                        <?php } else { ?>
+                                            <span class="text-gray-400">-</span>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php } else { ?>
+            <div class="bg-white p-6 rounded-xl shadow-md text-center text-gray-500">
+                <i class="fas fa-info-circle text-2xl mb-2"></i>
+                <p>No trip requests found.</p>
+            </div>
+        <?php } ?>
+    </div>
 </body>
 
 </html>
