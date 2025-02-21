@@ -71,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </a>
 
         <h2 class="flex items-center justify-center text-2xl font-semibold text-[#4E71FF] w-full">
-            Add Your Trip Bus
+            Trip Bus Management
         </h2>
     </div>
 

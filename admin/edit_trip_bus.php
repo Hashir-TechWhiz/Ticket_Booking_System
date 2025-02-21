@@ -1,4 +1,5 @@
 <?php
+// admin/edit_trip_bus.php
 session_start();
 include("../includes/db.php");
 
@@ -7,7 +8,7 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-// Validate Trip Bus ID
+// Check if trip bus ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("Invalid request.");
 }
@@ -15,37 +16,28 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 $trip_bus_id = $_GET['id'];
 $admin_id = $_SESSION['admin_id'];
 
-// Fetch trip bus details
-$stmt = $conn->prepare("SELECT * FROM trip_buses WHERE id = ? AND admin_id = ?");
-$stmt->bind_param("ii", $trip_bus_id, $admin_id);
-$stmt->execute();
-$result = $stmt->get_result();
+// Fetch existing trip bus details
+$sql = "SELECT * FROM trip_buses WHERE id = $trip_bus_id AND admin_id = $admin_id";
+$result = $conn->query($sql);
 
 if ($result->num_rows == 0) {
     die("Trip bus not found.");
 }
 
 $trip_bus = $result->fetch_assoc();
-$stmt->close();
 
-// Initialize variables
-$errors = [];
-$bus_name = $trip_bus['bus_name'];
-$bus_number = $trip_bus['bus_number'];
-$contact_number = $trip_bus['contact_number'];
-$seats = $trip_bus['seats'];
-$bus_type = $trip_bus['bus_type'];
+// Handle form submission for updating trip bus
+if (isset($_POST['update_trip_bus'])) {
+    $bus_name = trim($_POST['bus_name']);
+    $bus_number = trim($_POST['bus_number']);
+    $contact_number = trim($_POST['contact_number']);
+    $seats = trim($_POST['seats']);
+    $bus_type = $_POST['bus_type'];
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $bus_name = trim($_POST['bus_name'] ?? '');
-    $bus_number = trim($_POST['bus_number'] ?? '');
-    $contact_number = trim($_POST['contact_number'] ?? '');
-    $seats = trim($_POST['seats'] ?? '');
-    $bus_type = trim($_POST['bus_type'] ?? '');
+    $errors = [];
 
-    // Validation
-    if ($bus_name === '') {
+    // Validations
+    if (trim($bus_name) === '') {
         $errors['bus_name'] = "Bus name is required.";
     }
 
@@ -58,26 +50,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!ctype_digit($seats) || (int)$seats < 49 || (int)$seats > 58) {
-        $errors['seats'] = "Must be a number between 1 and 58.";
+        $errors['seats'] = "Must be a number between 49 and 58.";
     }
 
-    if (!in_array($bus_type, ["AC", "Non-AC"])) {
-        $errors['bus_type'] = "Invalid bus type.";
-    }
-
-    // Update in DB if no errors
+    // If no errors, update the trip bus
     if (empty($errors)) {
-        $stmt = $conn->prepare("UPDATE trip_buses SET bus_name = ?, bus_number = ?, contact_number = ?, seats = ?, bus_type = ? WHERE id = ? AND admin_id = ?");
-        $stmt->bind_param("ssssisi", $bus_name, $bus_number, $contact_number, $seats, $bus_type, $trip_bus_id, $admin_id);
+        $update_sql = "UPDATE trip_buses SET bus_name = '$bus_name', bus_number = '$bus_number', contact_number = '$contact_number', seats = $seats, bus_type = '$bus_type' WHERE id = $trip_bus_id AND admin_id = $admin_id";
 
-        if ($stmt->execute()) {
+        if ($conn->query($update_sql) === TRUE) {
             header("Location: dashboard.php");
             exit();
         } else {
-            $errors['general'] = "Error updating trip bus: " . $conn->error;
+            $error = "Error updating trip bus: " . $conn->error;
         }
-
-        $stmt->close();
     }
 }
 ?>
@@ -99,65 +84,83 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </a>
 
         <h2 class="flex items-center justify-center text-2xl font-semibold text-[#4E71FF] w-full">
-            Edit Your Trip Bus
+            Trip Bus Management
         </h2>
     </div>
 
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-8 mt-10">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Edit Trip Bus</h2>
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Trip Bus</h2>
 
-        <form method="POST" action="" class="space-y-6">
-            <div>
-                <label class="block text-sm font-medium">Bus Name</label>
-                <input type="text" name="bus_name" value="<?= htmlspecialchars($bus_name) ?>"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <?php if (isset($errors['bus_name'])) { ?>
-                    <p class="text-red-500 text-sm mt-1"><?= $errors['bus_name'] ?></p>
-                <?php } ?>
-            </div>
+            <?php if (isset($error)): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <?php echo $error; ?>
+                </div>
+            <?php endif; ?>
 
-            <div>
-                <label class="block text-sm font-medium">Bus Number</label>
-                <input type="text" name="bus_number" value="<?= htmlspecialchars($bus_number) ?>"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <?php if (isset($errors['bus_number'])) { ?>
-                    <p class="text-red-500 text-sm mt-1"><?= $errors['bus_number'] ?></p>
-                <?php } ?>
-            </div>
+            <form method="POST" action="" class="space-y-6">
+                <!-- Bus Name -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Bus Name:</label>
+                    <input type="text" name="bus_name" value="<?php echo htmlspecialchars($trip_bus['bus_name']); ?>"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    <?php if (isset($errors['bus_name'])): ?>
+                        <p class="text-red-500 text-sm mt-1"><?php echo $errors['bus_name']; ?></p>
+                    <?php endif; ?>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium">Contact Number</label>
-                <input type="tel" name="contact_number" value="<?= htmlspecialchars($contact_number) ?>"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <?php if (isset($errors['contact_number'])) { ?>
-                    <p class="text-red-500 text-sm mt-1"><?= $errors['contact_number'] ?></p>
-                <?php } ?>
-            </div>
+                <!-- Bus Number -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Bus Number:</label>
+                    <input type="text" name="bus_number" value="<?php echo htmlspecialchars($trip_bus['bus_number']); ?>"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    <?php if (isset($errors['bus_number'])): ?>
+                        <p class="text-red-500 text-sm mt-1"><?php echo $errors['bus_number']; ?></p>
+                    <?php endif; ?>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium">Seats</label>
-                <input type="number" name="seats" value="<?= htmlspecialchars($seats) ?>" min="49" max="58"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <?php if (isset($errors['seats'])) { ?>
-                    <p class="text-red-500 text-sm mt-1"><?= $errors['seats'] ?></p>
-                <?php } ?>
-            </div>
+                <!-- Contact Number -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Contact Number:</label>
+                    <input type="text" name="contact_number" maxlength="10" value="<?php echo htmlspecialchars($trip_bus['contact_number']); ?>"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    <?php if (isset($errors['contact_number'])): ?>
+                        <p class="text-red-500 text-sm mt-1"><?php echo $errors['contact_number']; ?></p>
+                    <?php endif; ?>
+                </div>
 
-            <div>
-                <label class="block text-sm font-medium">Bus Type</label>
-                <select name="bus_type" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="AC" <?= ($bus_type === "AC") ? "selected" : "" ?>>AC</option>
-                    <option value="Non-AC" <?= ($bus_type === "Non-AC") ? "selected" : "" ?>>Non-AC</option>
-                </select>
-                <?php if (isset($errors['bus_type'])) { ?>
-                    <p class="text-red-500 text-sm mt-1"><?= $errors['bus_type'] ?></p>
-                <?php } ?>
-            </div>
+                <!-- Seats -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Seats:</label>
+                    <input type="number" name="seats" value="<?php echo htmlspecialchars($trip_bus['seats']); ?>"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                    <?php if (isset($errors['seats'])): ?>
+                        <p class="text-red-500 text-sm mt-1"><?php echo $errors['seats']; ?></p>
+                    <?php endif; ?>
+                </div>
 
-            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-                Update Trip Bus
-            </button>
-        </form>
+                <!-- Bus Type -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Bus Type:</label>
+                    <select name="bus_type"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required>
+                        <option value="AC" <?php echo ($trip_bus['bus_type'] == 'AC') ? 'selected' : ''; ?>>AC</option>
+                        <option value="Non-AC" <?php echo ($trip_bus['bus_type'] == 'Non-AC') ? 'selected' : ''; ?>>Non-AC</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <input type="submit" name="update_trip_bus" value="Update Trip Bus"
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 

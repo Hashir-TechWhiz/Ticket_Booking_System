@@ -72,17 +72,23 @@ if (isset($_POST['add_bus'])) {
     </script>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-xl">
+<body class="relative flex flex-col items-center justify-start min-h-screen bg-cover bg-center bg-no-repeat px-[6%] py-5" style="background-image: url('../assets/images/AdminBg.jpg');">
+
+    <div class="relative flex justify-center items-center bg-white rounded-xl p-2 shadow-xl w-full">
+        <a href="javascript:window.history.back();" class="absolute left-3 flex items-center gap-2 text-blue-500">
+            <img src="../assets/icons/Back.png" alt="Back" class="w-5 h-5"> Back
+        </a>
+
+        <h2 class="flex items-center justify-center text-2xl font-semibold text-[#4E71FF] w-full">
+            Route Bus Management
+        </h2>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-xl mt-10">
         <!-- Header -->
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-1">Add New Bus</h2>
-            <a href="dashboard.php" class="text-blue-500 hover:text-blue-700 flex items-center text-sm">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Back to Dashboard
-            </a>
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">Add Route bus</h2>
+            <p class="text-gray-600">Fill out the form to add a new route bus.</p>
         </div>
 
         <form method="POST" action="" class="space-y-4">
