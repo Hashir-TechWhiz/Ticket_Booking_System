@@ -23,6 +23,15 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     if ($action == 'approve') {
         $status = 'Approved';
         $adminMessage = "Your trip request has been approved! 🎉 Please contact us at 123-456-7890 to confirm your booking and discuss pricing details.";
+        // Fetch approved request details to use for updating same-day requests
+        $approvedQuery = "SELECT trip_bus_id, date_from, date_to FROM trip_requests WHERE id = $request_id";
+        $approvedResult = $conn->query($approvedQuery);
+        if ($approvedResult && $approvedResult->num_rows > 0) {
+            $approvedRequest = $approvedResult->fetch_assoc();
+            $trip_bus_id = $approvedRequest['trip_bus_id'];
+            $date_from = $approvedRequest['date_from'];
+            $date_to = $approvedRequest['date_to'];
+        }
     } elseif ($action == 'reject') {
         $status = 'Rejected';
         $adminMessage = "We regret to inform you that the requested bus is unavailable for your selected dates. 😔 Please try alternative dates or contact us for other options.";
@@ -30,15 +39,32 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
     $update_sql = "UPDATE trip_requests SET status = '$status' WHERE id = $request_id";
     if ($conn->query($update_sql) === TRUE) {
-        // Fetch user email
+        // Additional logic for same-day requests: if a request is approved, automatically reject overlapping pending requests.
+        if ($action == 'approve') {
+            $otherUpdate_sql = "UPDATE trip_requests SET status = 'Rejected' WHERE trip_bus_id = $trip_bus_id AND date_from = '$date_from' AND date_to = '$date_to' AND status = 'Pending' AND id != $request_id";
+
+            if ($conn->query($otherUpdate_sql) === TRUE) {
+                // Fetch those other requests and send rejection emails.
+                $otherQuery = "SELECT tr.id, u.email, u.name FROM trip_requests tr JOIN users u ON tr.user_id = u.id WHERE tr.trip_bus_id = $trip_bus_id AND tr.date_from = '$date_from' AND tr.date_to = '$date_to' AND tr.status = 'Rejected' AND tr.id != $request_id";
+
+                $otherResult = $conn->query($otherQuery);
+                if ($otherResult && $otherResult->num_rows > 0) {
+                    while ($other = $otherResult->fetch_assoc()) {
+                        sendEmail($other['email'], $other['name'], 'Rejected', "We regret to inform you that the requested bus is unavailable for your selected dates. 😔 Please try alternative dates or contact us for other options.");
+                    }
+                }
+            }
+        }
+
+        // Fetch user email for the request that was directly approved/rejected.
         $user_query = "SELECT u.email, u.name FROM users u JOIN trip_requests tr ON u.id = tr.user_id WHERE tr.id = $request_id";
         $user_result = $conn->query($user_query);
-        if ($user_result->num_rows > 0) {
+        if ($user_result && $user_result->num_rows > 0) {
             $user = $user_result->fetch_assoc();
             $toEmail = $user['email'];
             $toName = $user['name'];
 
-            // Send email with updated parameters
+            // Send email for the action taken on the clicked request.
             sendEmail($toEmail, $toName, $status, $adminMessage);
         }
 
@@ -163,7 +189,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                 </div>
             </div>
         <?php } else { ?>
-            <div class="bg-white p-6 rounded-xl shadow-md text-center text-gray-500">
+            <div class="bg-white p-6 rounded-xl shadow-md text-center text-gray-500 mt-10">
                 <i class="fas fa-info-circle text-2xl mb-2"></i>
                 <p>No trip requests found.</p>
             </div>

@@ -51,15 +51,15 @@ if (isset($_POST['confirm_payment'])) {
         // Prepare email content
         $subject = "Your Bus Ticket Confirmation";
         $body = "
-            <h2>E-Ticket</h2>
-            <p><strong>Bus Number:</strong> {$bus['bus_number']}</p>
-            <p><strong>Seats:</strong> " . implode(", ", $selected_seats) . "</p>
-            <p><strong>Journey Date:</strong> $journey_date</p>
-            <p><strong>Departure Time:</strong> $departure_time</p>
-            <p><strong>Total Price:</strong> $$total_price</p>
-            <p>Thank you for booking with us!</p>
-        ";
-
+        <h2>E-Ticket</h2>
+        <p><strong>Bus Number:</strong> {$bus['bus_number']}</p>
+        <p><strong>Seats:</strong> " . implode(", ", $selected_seats) . "</p>
+        <p><strong>Journey Date:</strong> $journey_date</p>
+        <p><strong>Departure Time:</strong> $departure_time</p>
+        <p><strong>Total Price:</strong> $$total_price</p>
+        <p>Thank you for booking with us!</p>
+        <p>Need help finding your way? 🗺️ Explore the world with <a href='https://www.google.com/maps' style='color: #1a73e8; text-decoration: none; font-weight:   bold;'>Google Maps</a> and make your journey even smoother!</p>
+";
         // Send Email
         if (sendTicketEmail($user_email, $subject, $body)) {
             unset($_SESSION['booking']);

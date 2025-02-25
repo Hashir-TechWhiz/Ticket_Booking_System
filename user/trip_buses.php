@@ -20,6 +20,27 @@ $result = $conn->query($sql);
     <title>Available Trip Buses</title>
     <script src="../assets/js/popup.js" defer></script>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+        /* Styling for booked dates */
+        .flatpickr-day.booked-date {
+            background-color: #fecaca !important;
+            /* Tailwind red-200 */
+            color: #b91c1c !important;
+            /* Tailwind red-700 */
+            cursor: not-allowed;
+        }
+
+        /* Styling for past dates */
+        .flatpickr-day.past-date {
+            background-color: #e5e7eb !important;
+            /* Tailwind gray-200 */
+            color: #6b7280 !important;
+            /* Tailwind gray-500 */
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
 <body class="relative min-h-screen bg-cover bg-center bg-no-repeat px-[6%] py-5" style="background-image: url('../assets/images/Bg.jpg');">
@@ -78,11 +99,25 @@ $result = $conn->query($sql);
                     <br />
 
                     <label class="text-[#4E71FF] font-semibold">Date From:</label>
-                    <input type="date" name="date_from" id="dateFrom" required class="p-2 border border-blue-500 rounded-xl outline-none">
+                    <!-- Changed type to text to work with flatpickr -->
+                    <input type="text" name="date_from" id="dateFrom" required class="p-2 border border-blue-500 rounded-xl outline-none" placeholder="Select start date">
                     <br />
 
                     <label class="text-[#4E71FF] font-semibold">Date To:</label>
-                    <input type="date" name="date_to" id="dateTo" required class="p-2 border border-blue-500 rounded-xl outline-none">
+                    <!-- Changed type to text to work with flatpickr -->
+                    <input type="text" name="date_to" id="dateTo" required class="p-2 border border-blue-500 rounded-xl outline-none" placeholder="Select end date">
+
+                    <!-- Legend for Calendar -->
+                    <div class="mt-3 flex gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 bg-[#fecaca] border border-[#b91c1c] rounded-sm"></span>
+                            <span class="text-sm text-gray-700">Booked Dates</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-4 bg-gray-200 border border-gray-500 rounded-sm"></span>
+                            <span class="text-sm text-gray-700">Past Dates</span>
+                        </div>
+                    </div>
                     <br />
 
                     <label class="text-[#4E71FF] font-semibold">Days:</label>
