@@ -58,12 +58,15 @@ if (isset($_POST['confirm_payment'])) {
         <p><strong>Departure Time:</strong> $departure_time</p>
         <p><strong>Total Price:</strong> $$total_price</p>
         <p>Thank you for booking with us!</p>
-        <p>Need help finding your way? 🗺️ Explore the world with <a href='https://www.google.com/maps' style='color: #1a73e8; text-decoration: none; font-weight:   bold;'>Google Maps</a> and make your journey even smoother!</p>
+        <p>Need help finding your way? 🗺️ Explore Sri Lanka with <a href='https://www.google.com/maps' style='color: #1a73e8; text-decoration: none; font-weight: bold;'>Google Maps</a> and make your journey even smoother!</p>
 ";
-        // Send Email
+        // Send Email and show alert upon success
         if (sendTicketEmail($user_email, $subject, $body)) {
             unset($_SESSION['booking']);
-            header("Location: dashboard.php?success=1");
+            echo "<script>
+                    alert('Your e-ticket has been sent to your email. Thank you for booking with us!');
+                    window.location.href='dashboard.php';
+                </script>";
             exit();
         } else {
             $error = "Payment confirmed, but failed to send email.";
